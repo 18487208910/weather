@@ -3,6 +3,7 @@ package per.zy.weather.fragment;
 import android.app.Fragment;
 import android.app.ProgressDialog;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -26,6 +27,7 @@ import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 import per.zy.weather.R;
+import per.zy.weather.WeatherActivity;
 import per.zy.weather.db.City;
 import per.zy.weather.db.County;
 import per.zy.weather.db.Province;
@@ -88,6 +90,12 @@ public class ChooseAreaFragment extends Fragment {
                 }else if(currenLevel == LEVEL_CITY){
                     selectedCity = cityList.get(position);
                    queryCounties();
+                }else if(currenLevel == LEVEL_COUNTY){
+                    String weatherId = countyList.get(position).getWeatherId();
+                    Intent intent = new Intent(getActivity(), WeatherActivity.class);
+                    intent.putExtra("weather_id",weatherId);
+                    startActivity(intent);
+                    getActivity().finish();
                 }
             }
         });
@@ -240,5 +248,7 @@ public class ChooseAreaFragment extends Fragment {
         if(progressDialog !=null){
             progressDialog.dismiss();
         }
+
+
     }
 }
