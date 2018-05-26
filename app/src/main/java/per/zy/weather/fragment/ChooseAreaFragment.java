@@ -6,6 +6,7 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,6 +27,7 @@ import java.util.List;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
+import per.zy.weather.MainActivity;
 import per.zy.weather.R;
 import per.zy.weather.WeatherActivity;
 import per.zy.weather.db.City;
@@ -62,10 +64,12 @@ public class ChooseAreaFragment extends Fragment {
     private  int currenLevel;
 
 
+    public DrawerLayout drawerLayout;
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
-        Log.i("----","----1111-----");
+
 
         View view = inflater.inflate(R.layout.choose_area,container,false);
         titleText = (TextView) view.findViewById(R.id.title_text);
@@ -79,7 +83,6 @@ public class ChooseAreaFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        Log.i("----","----222-----");
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -92,10 +95,20 @@ public class ChooseAreaFragment extends Fragment {
                    queryCounties();
                 }else if(currenLevel == LEVEL_COUNTY){
                     String weatherId = countyList.get(position).getWeatherId();
-                    Intent intent = new Intent(getActivity(), WeatherActivity.class);
-                    intent.putExtra("weather_id",weatherId);
-                    startActivity(intent);
-                    getActivity().finish();
+
+                        if(getActivity() instanceof MainActivity){
+                            Intent intent = new Intent(getActivity(), WeatherActivity.class);
+                            intent.putExtra("weather_id",weatherId);
+                            startActivity(intent);
+                            getActivity().finish();
+                        }else if (getActivity() instanceof  WeatherActivity){
+                            WeatherActivity activity = (WeatherActivity) getActivity();
+                            activity.drawerLayout.closeDrawers();
+                           activity.swipeRefresh.setRefreshing(true);
+                            activity.requestWeather(weatherId);
+
+                        }
+
                 }
             }
         });
