@@ -1,16 +1,22 @@
 package per.zy.weather.util;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.List;
+
 import per.zy.weather.db.City;
 import per.zy.weather.db.County;
 import per.zy.weather.db.Province;
+import per.zy.weather.gson.App;
+import per.zy.weather.gson.Today;
 import per.zy.weather.gson.Weather;
 
 /**
@@ -102,5 +108,40 @@ public class Utility {
             e.printStackTrace();
         }
         return null;
+    }
+
+    /**
+     * 将返回的数据解析成today实体
+     */
+
+    public static List<App>   handleAppResponse(String response){
+       Gson gson = new Gson();
+        List<App> appList = gson.fromJson(response,new TypeToken<List<App>>(){}.getType());
+       for (App app:appList){
+           Log.i("--------------","id is"+app.getId());
+           Log.i("--------------","name is"+app.getName());
+       }
+        return appList;
+    }
+
+    /**
+     * 将返回的数据解析成today实体
+     */
+
+    public static List<Today>   handleTodayResponse(String response){
+
+        try {
+            JSONObject jsonObject = new JSONObject(response);
+            String jsonArray = jsonObject.getJSONArray("result").toString();
+            Gson gson = new Gson();
+            List<Today> todayList = gson.fromJson(jsonArray,new TypeToken<List<Today>>(){}.getType());
+
+            return todayList;
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return null;
+
     }
 }

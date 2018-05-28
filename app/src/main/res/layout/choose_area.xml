@@ -3,20 +3,24 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#fff">
+    android:background="#aacccccc"
+
+    >
 
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="?attr/colorPrimary">
+        android:layout_marginTop="15dp"
+
+       >
 
         <TextView
             android:id="@+id/title_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
-            android:textColor="#000"
+            android:textColor="#fff"
             android:textSize="20sp"
            />
 
@@ -27,7 +31,7 @@
             android:layout_marginLeft="10dp"
             android:layout_alignParentLeft="true"
             android:layout_centerVertical="true"
-           android:text="返回" />
+            android:background="@drawable/back" />
     </RelativeLayout>
 
     <ListView

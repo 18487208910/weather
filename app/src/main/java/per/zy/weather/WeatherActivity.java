@@ -1,5 +1,6 @@
 package per.zy.weather;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Build;
@@ -21,11 +22,16 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 
 import java.io.IOException;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
+import per.zy.weather.gson.App;
 import per.zy.weather.gson.Forecast;
+import per.zy.weather.gson.Today;
 import per.zy.weather.gson.Weather;
 import per.zy.weather.util.HttpUtil;
 import per.zy.weather.util.Utility;
@@ -44,6 +50,10 @@ public class WeatherActivity extends AppCompatActivity {
 
     private LinearLayout forecastLayout;
 
+    private LinearLayout appLayout;
+
+    private  LinearLayout todayLayout;
+
     private TextView aqiText;
 
     private TextView pm25Text;
@@ -54,6 +64,10 @@ public class WeatherActivity extends AppCompatActivity {
 
     private TextView sportText;
 
+    //Today
+    private TextView today_title;
+
+
     private ImageView bingPicImg;
 
     public SwipeRefreshLayout swipeRefresh;
@@ -63,6 +77,8 @@ public class WeatherActivity extends AppCompatActivity {
     public DrawerLayout drawerLayout;
 
     private Button navButton;
+
+
 
 
     @Override
@@ -85,11 +101,19 @@ public class WeatherActivity extends AppCompatActivity {
         degreeText = (TextView) findViewById(R.id.degree_text);
         weatherInfoText = (TextView) findViewById(R.id.weather_info_text);
         forecastLayout = (LinearLayout) findViewById(R.id.forecast_layout);
+
+        appLayout = (LinearLayout) findViewById(R.id.app_layout);
+
+        todayLayout = (LinearLayout) findViewById(R.id.today_layout);
+
         aqiText = (TextView) findViewById(R.id.aqi_text);
         pm25Text = (TextView) findViewById(R.id.pm25_text);
         comfortText = (TextView) findViewById(R.id.comfort_text);
         carWashText = (TextView) findViewById(R.id.car_wash_text);
         sportText = (TextView) findViewById(R.id.sport_text);
+
+        //Today
+
 
         //刷新
         swipeRefresh = (SwipeRefreshLayout) findViewById(R.id.swiper_refresh);
@@ -108,6 +132,8 @@ public class WeatherActivity extends AppCompatActivity {
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         String weatherString = prefs.getString("weather", null);
+//        String today = prefs.getString("todaylist", null);
+//        String app = prefs.getString("applist", null);
         String bingPic = prefs.getString("bing_pic",null);
         if(bingPic != null){
             Glide.with(this).load(bingPic).into(bingPicImg);
@@ -117,14 +143,22 @@ public class WeatherActivity extends AppCompatActivity {
         if (weatherString != null) {
             //有缓存时直接解析天气数据
             Weather weather = Utility.handleWeatherResponse(weatherString);
+
             mWeatherId = weather.basic.weatherId;
             showWeatherInfo(weather);
+
+//            showAppInfo(app);
+            requestTest();
+            requestToday();
+
         } else {
             //去服务器查询天气数据
             mWeatherId = getIntent().getStringExtra("weather_id");
             String weatherId = getIntent().getStringExtra("weather_id");
             weatherLayout.setVisibility(View.INVISIBLE);
             requestWeather(weatherId);
+            requestTest();
+            requestToday();
         }
         swipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -246,5 +280,113 @@ public class WeatherActivity extends AppCompatActivity {
 
         });
     }
+
+/**
+ * 测试json解析
+ */
+public void requestTest( ) {
+    String Url = "http://aac2de1f8d056ce157ca.test.upcdn.net/apicloud/6a510a1d74326d90d8beec8f248a9421.json";
+    HttpUtil.sendOKHttpRequest(Url, new Callback() {
+        @Override
+        public void onResponse(Call call, Response response) throws IOException {
+            final String responseText = response.body().string();
+         final List<App> appList =  Utility.handleAppResponse(responseText);
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (appList != null ) {
+                        SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(WeatherActivity.this).edit();
+                        editor.putString("applist", responseText);
+                       editor.apply();
+                        showAppInfo(appList);
+                    } else {
+                        Toast.makeText(WeatherActivity.this, "获取天气信息失败", Toast.LENGTH_SHORT).show();
+
+                    }
+                }
+            });
+        }
+
+        @Override
+        public void onFailure(Call call, IOException e) {
+
+        }
+    });
+
+}
+
+    private void showAppInfo(List<App> appList) {
+        appLayout.removeAllViews();
+        for(App app : appList){
+            View view = LayoutInflater.from(this).inflate(R.layout.app_item,appLayout,false);
+            TextView id = (TextView) view.findViewById(R.id.app_id);
+            TextView name = (TextView) view.findViewById(R.id.app_name);
+            id.setText(app.getId());
+            name.setText(app.getName());
+            appLayout.addView(view);
+        }
+            weatherLayout.setVisibility(View.VISIBLE);
+    }
+
+
+    /**
+     * 历史今天
+     */
+    public void requestToday( ) {
+        Calendar calendar=Calendar.getInstance();
+        String month = Integer.toString(calendar.get(Calendar.MONTH)+1);
+        String day = Integer.toString(calendar.get(Calendar.DATE));
+        String Url = "http://api.juheapi.com/japi/toh?v=1.0&month="+month+"&day="+day+"&key=6c3130b3c8a85d066fb18012adc1fd35";
+        HttpUtil.sendOKHttpRequest(Url, new Callback() {
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                final String responseText = response.body().string();
+                final List<Today> todayList =  Utility.handleTodayResponse(responseText);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (todayList != null ) {
+                        SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(WeatherActivity.this).edit();
+                        editor.putString("todaylist", responseText);
+                        editor.apply();
+                            showTodayInfo(todayList);
+                        } else {
+                            Toast.makeText(WeatherActivity.this, "获取天气信息失败", Toast.LENGTH_SHORT).show();
+
+                        }
+                    }
+                });
+            }
+
+            @Override
+            public void onFailure(Call call, IOException e) {
+
+            }
+        });
+
+    }
+
+    private void showTodayInfo(List<Today> todayList) {
+        todayLayout.removeAllViews();
+        for(Today today : todayList){
+            View view = LayoutInflater.from(this).inflate(R.layout.today_item,todayLayout,false);
+            TextView title = (TextView) view.findViewById(R.id.today_title);
+
+            TextView year = (TextView) view.findViewById(R.id.today_year);
+
+            TextView des = (TextView) view.findViewById(R.id.today_des);
+
+            ImageView img = (ImageView) view.findViewById(R.id.today_pic_img);
+
+            Glide.with(WeatherActivity.this).load(today.getPic()).into(img);
+            title.setText(today.getTitle());
+            year.setText(today.getYear()+"年　　　"+today.getLunar());
+            des.setText(today.getDes());
+
+            todayLayout.addView(view);
+        }
+        weatherLayout.setVisibility(View.VISIBLE);
+    }
+
 }
 

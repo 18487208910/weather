@@ -3,6 +3,7 @@
     package="per.zy.weather">
 
     <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:name="org.litepal.LitePalApplication"
         android:allowBackup="true"
@@ -18,7 +19,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-<activity android:name=".WeatherActivity" />
+        <activity android:name=".WeatherActivity" />
+
     </application>
 
 </manifest>

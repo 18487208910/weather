@@ -46,6 +46,10 @@
             <include layout="@layout/aqi" />
 
             <include layout="@layout/suggestion" />
+
+            <include layout="@layout/app" />
+
+            <include layout="@layout/today" />
         </LinearLayout>
     </ScrollView>
     </android.support.v4.widget.SwipeRefreshLayout>
